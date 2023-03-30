@@ -2,23 +2,23 @@
 az login
 
 # Set your Azure subscription ID
-az account set --subscription <subscription_id>
+az account set --subscription lab_EnergyLevelPredictor_20229444
 
 # Define your resource group and region
-resourceGroup=<resource_group_name>
-location=<azure_region>
+resourceGroup=VladTest
+location=westeurope
+storageName=vladiddevsa
 
 # Create a resource group
-az group create --name $resourceGroup --location $location
+# az group create --name $resourceGroup --location $location
 
 # Create a storage account
-storageName=<storage_account_name>
-az storage account create --name $storageName --resource-group $resourceGroup --location $location --sku Standard_LRS
+
+# az storage account create --name $storageName --resource-group $resourceGroup --location $location --sku Standard_LRS
 
 # Create a Function app in a Linux Consumption Plan
-functionAppName=<function_app_name>
+functionAppName=vlad-id-dev-funcapp
 az functionapp create --name $functionAppName --resource-group $resourceGroup --storage-account $storageName --os-type Windows --consumption-plan-location $location --runtime dotnet-isolated --runtime-version 7 --functions-version 4
-
 # Allow all networks to access the function app
 az functionapp cors add --name $functionAppName --resource-group $resourceGroup --allowed-origins "*"
 
