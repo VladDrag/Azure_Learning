@@ -17,7 +17,7 @@ az storage account create --name $storageName --resource-group $resourceGroup --
 
 # Create a Function app in a Linux Consumption Plan
 functionAppName=<function_app_name>
-az functionapp create --name $functionAppName --resource-group $resourceGroup --storage-account $storageName --os-type Windows --consumption-plan-location $location --runtime dotnet --runtime-version 7 --functions-version 4
+az functionapp create --name $functionAppName --resource-group $resourceGroup --storage-account $storageName --os-type Windows --consumption-plan-location $location --runtime dotnet --runtime-version 6 --functions-version 4
 
 # Allow all networks to access the function app
 az functionapp cors add --name $functionAppName --resource-group $resourceGroup --allowed-origins "*"
