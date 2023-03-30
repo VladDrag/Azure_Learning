@@ -48,7 +48,7 @@ namespace Aibel.Func
 			// var response = req.CreateResponse(System.Net.HttpStatusCode.OK);
 			string connectionString = System.Environment.GetEnvironmentVariable("connString");
 			using (var con = new NpgsqlConnection(connectionString)) 
-			{ 
+			{
 				con.Open(); 
 				var dbProvider = new GetDbData();
 				List<MyClass> tables = dbProvider.GetTableNamesAsync<MyClass>(con);
