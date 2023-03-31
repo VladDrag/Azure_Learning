@@ -15,22 +15,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aibel.Func
 {
-	// public class MyClass
-	// {
-	// 	public string table_name { get; set; }
-	// }
 
-	// public class GetDbData
-	// {
-	// 	public List<T> GetTableNamesAsync<T>(NpgsqlConnection con) where T : MyClass, new()
-	// 	{
-	// 		var tableNames = con.Query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'").ToList();
-	// 		List<T> list = tableNames.Select(item => new T { table_name = item.table_name }).AsEnumerable().ToList();
-	// 		return list;
-	// 	}
-	// }
-
-    public static class HttpTrigger
+	public static class HttpTrigger
     {
 
         [FunctionName("HttpTrigger")]
