@@ -29,24 +29,20 @@ namespace Aibel.Func
 			{
 				con.Open();
 				// create new table
-				//con.Execute("CREATE TABLE IF NOT EXISTS test (id serial PRIMARY KEY, name VARCHAR(40) NOT NULL, date TIMESTAMP NOT NULL)");
-
-
+				con.Execute("CREATE TABLE IF NOT EXISTS testtable (id serial PRIMARY KEY, name VARCHAR(40) NOT NULL, date TIMESTAMP NOT NULL)");
+				
 				// delete table
 				//con.Execute("DROP TABLE IF EXISTS test");
 
 				// insert data *ONLY IF WE KNOW A TABLE EXISTS! -> we need to add extra code to check if table exists
-				//con.Execute("INSERT INTO test (name, date) VALUES(@Name, @Date)", new { Name = "Tim", Date = DateTime.Now });
+				con.Execute("INSERT INTO testtable (name, date) VALUES(@Name, @Date)", new { Name = "Tim", Date = DateTime.Now });
 
 				// get data with Dapper
-				//var test = con.Query("SELECT * FROM test").ToList();
-	
-				// possible redundant code
-				//var dbProvider = new GetDbData();
-				//List<MyClass> tables = dbProvider.GetTableNamesAsync<MyClass>(con);
+				var initialData = await con.QueryAsync("SELECT * FROM testtable");
+				var data = initialData.ToList();
 
 				// in order to query async we need to use Dapper; 
-				// for that, we need to use QueryAsync instead of Query; 
+				// for that, we need to use QueryAsync instead of Query;
 				// we cannot use ToList() with QueryAsync, so we need insert the items in a list after the operation finishes;
 				var tableInfo = await con.QueryAsync("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
 				var tables = tableInfo.ToList();
@@ -55,7 +51,7 @@ namespace Aibel.Func
 				var tableInfoJson = JsonConvert.SerializeObject(tables);
 
 				int tableCount = tables.Count();
-				return new OkObjectResult("Number of tables is: " + tableCount + " and the table names are: " + tableInfoJson);
+				return new OkObjectResult("Number of tables is: " + tableCount + " and the table names are: " + tableInfoJson + "and the data is: " + data[0]);
 			}
         }
     }
