@@ -51,7 +51,7 @@ namespace Aibel.Func
 				var tableInfoJson = JsonConvert.SerializeObject(tables);
 
 				int tableCount = tables.Count();
-				return new OkObjectResult("Number of tables is: " + tableCount + " and the table names are: " + tableInfoJson + "and the data is: " + data[0]);
+				return new OkObjectResult(tableInfoJson);
 			}
         }
     }
