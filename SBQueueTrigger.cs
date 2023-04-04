@@ -17,14 +17,16 @@ namespace Azure_Learning;
 
 public static class SBQueueTrigger
 {
-    private static string _serviceBusConn = (string) GetSecret("ServiceBusConnection");
+    // private static string _serviceBusConn = (string) GetSecret("ServiceBusConnection");
     public static string GetSecret(string secretName)
     {
+        //DOES NOT WORK!!!!!!! MUST CONTINUE TRYING;
+        
         // function can be modified by adding vaultUrl as a parameter in the function signature
         var vaultUrl = "https://vlad-id-dev-kv.vault.azure.net/";
         
         // Create a new instance of KeyVaultClient
-        var azureServiceTokenProvider = new AzureServiceTokenProvider();
+        var azureServiceTokenProvider = new AzureServiceTokenProvider(); //check if this is correct
         var keyVaultClient = new KeyVaultClient(
             new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
 
@@ -37,8 +39,8 @@ public static class SBQueueTrigger
     [FunctionName("SBQueueTrigger")]
     public static async Task RunAsync([ServiceBusTrigger("funcappqueue", Connection = "ServiceBusConnection" )] Message myQueueItem, ILogger log)
     {
-        log.LogInformation($"C# ServiceBus queue trigger function processed message: {Encoding.UTF8.GetString(myQueueItem.Body)} + db conn string is {GetSecret("DbConnString")}");
-        
+        log.LogInformation($"C# ServiceBus queue trigger function processed message: {Encoding.UTF8.GetString(myQueueItem.Body)}");
+
         var messageContent = Encoding.UTF8.GetString(myQueueItem.Body);
         var result = "vdtest";
 
@@ -46,6 +48,9 @@ public static class SBQueueTrigger
         
         //We are using local env variables, but just as well we could use the Get Secret function to retrieve the connection string from Key Vault
         var connectionString = Environment.GetEnvironmentVariable("DbConnString");
+        // var connectionString = GetSecret("DbConnString");
+
+        log.LogInformation(connectionString);
         using (var connection = new NpgsqlConnection(connectionString))
         {
             connection.Open();
@@ -55,6 +60,5 @@ public static class SBQueueTrigger
             result = results.ToList()[0];
         }
         log.LogInformation("The result is: " + result);
-        
     }
 }

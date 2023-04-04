@@ -24,7 +24,7 @@ namespace Aibel.Func
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-			string connectionString = System.Environment.GetEnvironmentVariable("connString");
+			string connectionString = System.Environment.GetEnvironmentVariable("DbConnString");
 			using (var con = new NpgsqlConnection(connectionString)) 
 			{
 				con.Open();
@@ -41,7 +41,7 @@ namespace Aibel.Func
 				var initialData = await con.QueryAsync("SELECT * FROM testtable");
 				var data = initialData.ToList();
 
-				// in order to query async we need to use Dapper; 
+				// in order to query async we need to use Dapper;
 				// for that, we need to use QueryAsync instead of Query;
 				// we cannot use ToList() with QueryAsync, so we need insert the items in a list after the operation finishes;
 				var tableInfo = await con.QueryAsync("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
