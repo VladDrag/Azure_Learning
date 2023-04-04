@@ -28,21 +28,30 @@ namespace Azure_Learning
             dynamic data = JsonConvert.DeserializeObject(requestBody);
             name = name ?? data?.name;
 
+            //set connection to service bus
             string connectionString = System.Environment.GetEnvironmentVariable("ServiceBusConnection");
 
             string responseMessage = string.IsNullOrEmpty(name)
                 ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
                 : $"Hello, {name}. This HTTP triggered function executed successfully.";
 
+            //transform data into byte array
             byte[] messageBytes = Encoding.UTF8.GetBytes(responseMessage);
+
+            //select queue for message direction
             string queueName = "funcappqueue";
 
 
+            //create queue client
             QueueClient queueClient = new QueueClient(connectionString, queueName);
+
+            //create message for queue
             Message message = new Message(messageBytes);
 
+            //send message to queue
             await queueClient.SendAsync(message);
 
+            //optionally return custom message with information of success / failure; in this case, it's the same as the message
             return new OkObjectResult(responseMessage);
         }
     }
