@@ -1,39 +1,33 @@
 using System;
 using System.Text;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.Services.AppAuthentication;
-using Microsoft.Azure.KeyVault;
 using Npgsql;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 
 namespace Azure_Learning;
 
 public static class SBQueueTrigger
 {
     // private static string _serviceBusConn = (string) GetSecret("ServiceBusConnection");
-    public static string GetSecret(string secretName)
+    public async static Task<string> GetSecret(string secretName)
     {
-        //DOES NOT WORK!!!!!!! MUST CONTINUE TRYING;
-        
-        // function can be modified by adding vaultUrl as a parameter in the function signature
-        var vaultUrl = "https://vlad-id-dev-kv.vault.azure.net/";
-        
-        // Create a new instance of KeyVaultClient
-        var azureServiceTokenProvider = new AzureServiceTokenProvider(); //check if this is correct
-        var keyVaultClient = new KeyVaultClient(
-            new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+        var keyVaultName = "vlad-id-dev-kv";
+        var kvUri = $"https://{keyVaultName}.vault.azure.net";
 
-        // Retrieve the specified secret from the Key Vault
-        var secret = keyVaultClient.GetSecretAsync(vaultUrl, secretName).GetAwaiter().GetResult();
+        var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
 
-        return secret.Value;
+        Console.WriteLine($"Retrieving your secret from {keyVaultName}.");
+        var secret = await client.GetSecretAsync(secretName);
+        Console.WriteLine($"Your secret is '{secret.Value.Value}'.");
+
+        return secret.Value.Value;
+        
     }
     
     [FunctionName("SBQueueTrigger")]
@@ -46,9 +40,9 @@ public static class SBQueueTrigger
 
         // Insert message into database using Dapper
         
-        //We are using local env variables, but just as well we could use the Get Secret function to retrieve the connection string from Key Vault
-        var connectionString = Environment.GetEnvironmentVariable("DbConnString");
-        // var connectionString = GetSecret("DbConnString");
+        //We can also use environmental variables
+        //var connectionString = Environment.GetEnvironmentVariable("DbConnString");
+        var connectionString = await GetSecret("DbConnString");
 
         log.LogInformation(connectionString);
         using (var connection = new NpgsqlConnection(connectionString))
