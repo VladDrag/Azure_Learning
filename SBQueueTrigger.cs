@@ -6,28 +6,32 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Azure.ServiceBus;
+using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Npgsql;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Configuration;
 
 namespace Azure_Learning;
 
 public static class SBQueueTrigger
 {
-    // private static string _serviceBusConn = (string) GetSecret("ServiceBusConnection");
     public async static Task<string> GetSecret(string secretName)
     {
-        var keyVaultName = "vlad-id-dev-kv";
-        var kvUri = $"https://{keyVaultName}.vault.azure.net";
-
-        var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
-
-        Console.WriteLine($"Retrieving your secret from {keyVaultName}.");
-        var secret = await client.GetSecretAsync(secretName);
-        Console.WriteLine($"Your secret is '{secret.Value.Value}'.");
-
-        return secret.Value.Value;
+        var kvUrl = $"https://vlad-id-dev-kv.vault.azure.net";
+        var azureServiceTokenProvider = new AzureServiceTokenProvider();
         
+        var keyVaultClient = new KeyVaultClient( new KeyVaultClient.AuthenticationCallback( azureServiceTokenProvider.KeyVaultTokenCallback));
+
+        var builder = new ConfigurationBuilder();
+        builder.AddAzureKeyVault(kvUrl, keyVaultClient, new DefaultKeyVaultSecretManager());
+        builder.AddEnvironmentVariables();
+        var config = builder.Build();
+        return config[secretName];
+
     }
     
     [FunctionName("SBQueueTrigger")]
@@ -43,8 +47,14 @@ public static class SBQueueTrigger
         //We can also use environmental variables
         //var connectionString = Environment.GetEnvironmentVariable("DbConnString");
         var connectionString = await GetSecret("DbConnString");
+        log.LogInformation("The SECRET from KEY VAULT IS : " + connectionString);
 
-        log.LogInformation(connectionString);
+        //try extract info from App Seeting at Function App
+        log.LogInformation("The app setting is : " + await GetSecret("AzureWebJobsStorage"));
+        
+        //try extract info from Connection String at Function App
+        log.LogInformation("The conn string is : " + await GetSecret("ServiceBusConnection"));
+        
         using (var connection = new NpgsqlConnection(connectionString))
         {
             connection.Open();
