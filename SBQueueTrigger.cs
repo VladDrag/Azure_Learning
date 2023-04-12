@@ -40,21 +40,12 @@ public static class SBQueueTrigger
         log.LogInformation($"C# ServiceBus queue trigger function processed message: {Encoding.UTF8.GetString(myQueueItem.Body)}");
 
         var messageContent = Encoding.UTF8.GetString(myQueueItem.Body);
-        var result = "vdtest";
+        var result = "the result is incorrect!";
 
-        // Insert message into database using Dapper
-        
-        //We can also use environmental variables
-        //var connectionString = Environment.GetEnvironmentVariable("DbConnString");
-        var connectionString = await GetSecret("DbConnString");
-        log.LogInformation("The SECRET from KEY VAULT IS : " + connectionString);
+        //We can use either an env variable OR use Key Vault (although that requires previous 'az login' locally)
+        var connectionString = Environment.GetEnvironmentVariable("DbConnString");
+        // var connectionString = await GetSecret("DbConnString");
 
-        //try extract info from App Seeting at Function App
-        log.LogInformation("The app setting is : " + await GetSecret("AzureWebJobsStorage"));
-        
-        //try extract info from Connection String at Function App
-        log.LogInformation("The conn string is : " + await GetSecret("ServiceBusConnection"));
-        
         using (var connection = new NpgsqlConnection(connectionString))
         {
             connection.Open();
